@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  webdav:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: shelf-webdav
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      # Server configuration
+      - PORT=8080
+      - HOST=0.0.0.0
+      - DATA_DIR=/data
+      - DAV_PREFIX=/dav
+
+      # Authentication (uncomment and set to enable auth)
+      # - ALLOW_ANONYMOUS=false
+      # - DAV_USERNAME=admin
+      # - DAV_PASSWORD=secret
+
+      # Anonymous access (default: true)
+      - ALLOW_ANONYMOUS=true
+
+      # Throttling configuration
+      - MAX_CONCURRENT=100
+      - MAX_REQ_PER_SEC=10
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/dav/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Example with authentication enabled
+  webdav-auth:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: shelf-webdav-auth
+    profiles:
+      - auth
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./data-auth:/data
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - DATA_DIR=/data
+      - DAV_PREFIX=/dav
+      - ALLOW_ANONYMOUS=false
+      - DAV_USERNAME=admin
+      - DAV_PASSWORD=changeme
+      - MAX_CONCURRENT=200
+      - MAX_REQ_PER_SEC=20
+    restart: unless-stopped
+
+volumes:
+  data:
+  data-auth:
