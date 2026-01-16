@@ -10,11 +10,12 @@ import 'package:shelf_dav/src/exceptions.dart';
 /// Format: "size-mtime-hash" where hash is MD5 of the combined values
 ///
 /// Example: "1234-1704067200000-a3f8b9c2"
-String generateETag(final File file, final int size, final DateTime modified) {
+String generateETag(final FileSystemEntity file, final int size, final DateTime modified, {bool quoted = true}) {
   final timestamp = modified.millisecondsSinceEpoch;
   final input = '$size-$timestamp-${file.path}';
   final hash = md5.convert(utf8.encode(input)).toString().substring(0, 8);
-  return '"$size-$timestamp-$hash"';
+  final etag = '$size-$timestamp-$hash';
+  return '"$etag"';
 }
 
 /// Parse ETag from header value

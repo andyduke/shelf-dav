@@ -9,6 +9,7 @@ import 'package:shelf_dav/src/utils/http_status.dart';
 import 'package:xml/xml.dart';
 import 'package:shelf_dav/src/xml_templates.dart' as templates;
 import 'package:shelf_dav/src/webdav_constants.dart';
+import 'package:shelf_dav/src/utils/etag.dart';
 
 /// Validates that a path is within the root directory
 bool isPathWithinRoot(
@@ -59,6 +60,8 @@ Future<void> file(
   final Map<String, dynamic>? customProperties,
 }) async {
   final stat = await file.stat();
+  final etag = generateETag(file, stat.size, stat.modified, quoted: false);
+
   // Namespaces are a bad idea, and so is using XML like this.
   builder.element(
     'response',
@@ -95,6 +98,11 @@ Future<void> file(
                   builder,
                   'getcontenttype',
                   mime(file.path) ?? 'application/octet-stream',
+                );
+                property(
+                  builder,
+                  'getetag',
+                  etag,
                 );
                 builder.element('resourcetype', namespace: 'DAV:');
 
@@ -140,6 +148,8 @@ Future<void> directory(
 ) async {
   if (depth < -1) return;
   final stat = await dir.stat();
+  final etag = generateETag(dir, stat.size, stat.modified, quoted: false);
+
   builder.element(
     'response',
     namespace: 'DAV:',
@@ -169,6 +179,11 @@ Future<void> directory(
                   builder,
                   'getlastmodified',
                   HttpDate.format(stat.modified.toUtc()),
+                );
+                property(
+                  builder,
+                  'getetag',
+                  etag,
                 );
               }
               builder.element(
