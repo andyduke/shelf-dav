@@ -214,7 +214,7 @@ class ShelfDAV {
       context: {...request.context, ContextKeys.statCache: cache},
     );
     // Security: Check for path traversal before normalization
-    final rawPath = request.requestedUri.path;
+    final rawPath = Uri.decodeComponent(request.requestedUri.path);
     if (containsPathTraversal(rawPath)) {
       _logger.warning('Path traversal attempt detected in: $rawPath');
       return Response.forbidden('Access denied');

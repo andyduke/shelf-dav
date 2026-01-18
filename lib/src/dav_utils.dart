@@ -300,7 +300,7 @@ int depth(final String? header, {final int defaultValue = 0}) =>
 
 String canonical(final Context context, final Uri uri) {
   final prefix = context.current;
-  final path = uri.path;
+  final path = Uri.decodeComponent(uri.path);
   final relative = path.startsWith(prefix) ? path : '$prefix/$path';
   final canonical = context.canonicalize(relative);
   final stripped = canonical.replaceFirst(prefix, '');
